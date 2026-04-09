@@ -1,9 +1,16 @@
-// Author: Ben Maigur
-//
-// A C network client adapted from the qotdClient.c class example 
-//
-// 
-
+/************************************************************/
+/* Author: Ben Maigur                                       */
+/* Major: Computer Science                                  */
+/* Creation Date: 26 March, 2026                            */
+/* Due Date: 2 April, 2026                                  */
+/* Course: CS321-01                                         */
+/* Professor Name: Prof. Shimkanon                          */
+/* Assignment: Client-Server Project Phase #1               */
+/* Filename: client.c                                       */
+/* Purpose: A C client server file adapted from qotdClient.c*/
+/*          class example. Provides arguments to specify    */
+/*          port number                                     */
+/************************************************************/
 
 
 
@@ -13,7 +20,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-
+/** NOTE: For compilation, you must include the -lm flag to include math.h binaries.
+     e.g. gcc -o client client.c -lnsl -lm 
+*/
 
 
 int main(int argc, char *argv[])
