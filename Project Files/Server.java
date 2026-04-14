@@ -17,11 +17,10 @@ import java.net.*;
 public class Server
 {  
     /***************************************************************************/
-    /* Function name: getToken */
-    /* Description: Retrieves a character from an interpreter to parse */
-    /* into a “token” item */
-    /* Parameters: object – token: the character object to be retrieved */
-    /* Return Value: char – the token after being parsed and error-checked */
+    /* Function name: main */
+    /* Description: Starts the server and listens for client connections */
+    /* Parameters: args – command line arguments (port number) */
+    /* Return Value: none */
     /***************************************************************************/
     public static void main(String[] args) throws IOException
     {
