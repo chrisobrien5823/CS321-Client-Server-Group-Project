@@ -13,9 +13,14 @@
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class Server
 {  
+
+    private static final int SIZE = 20;  // size of the canvas in pixels
+    private static char[][] canvas = new char[SIZE][SIZE];  // the canvas itself
+    private static List<Handler> clients = new ArrayList<>();  // list of connected clients
     /***************************************************************************/
     /* Function name: main */
     /* Description: Starts the server and listens for client connections */
@@ -32,12 +37,24 @@ public class Server
 
        int portNumber = Integer.parseInt(args[0]);
        ServerSocket serverSocket = new ServerSocket(portNumber);
+
+       // Initialize the canvas with blank spaces
+       for (int i = 0; i < SIZE; i++) 
+       {
+            Arrays.fill(canvas[i], '.');
+       }
+
        try
        {
             while(true)
             {
                 // spawn a handler thread for client connection
-                new Handler(serverSocket.accept()).start();
+                Handler handler = new Handler(serverSocket.accept());
+                // synchronize access to the clients list when adding a new handler
+                synchronized(clients) {
+                    clients.add(handler);
+                }
+                handler.start();
             }  // end while
         }
         finally
@@ -45,6 +62,48 @@ public class Server
             serverSocket.close();
         } // end finally
     }  // end function main
+
+    
+    /***************************************************************************/
+    /* Function name: broadcast */
+    /* Description: Sends a message to all connected clients */
+    /* Parameters: message – the message to send */
+    /* Return Value: none */
+    /***************************************************************************/
+    public static void broadcast(String message) 
+    {
+        synchronized(clients)
+        {
+            for (Handler client : clients) 
+            {
+                client.send(message); //send not implemented yet
+            }
+        }
+    }
+
+    /***************************************************************************/
+    /* Function name: handleSet */
+    /* Description: Updates the canvas and notifies all clients */
+    /* Parameters: x – the x-coordinate, y – the y-coordinate, c – the color to set */
+    /* Return Value: none */
+    /***************************************************************************/
+    public static void handleSet(int x, int y, char color) 
+    {
+        if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) // so long as the pixel is within the canvas
+        {
+            canvas[x][y] = color;
+            
+            String msg = Protocol.encodeUpdate(x, y, color); //LIBRARY FUNCTION "UPDATE x y color"
+            broadcast(msg); // send update to all clients
+        }
+    }
+
+    //getCanvas TBA
+    public static synchronized String getFullCanvas() 
+    {
+        return Protocol.encodeFull(canvas); //LIBRARY FUNCTION "FULL canvas"
+    }
+
 
 
      private static class Handler extends Thread
@@ -62,6 +121,16 @@ public class Server
             this.socket = socket;
         }  // end Handler
 
+        /***************************************************************************/
+        /* Function name: send */
+        /* Description: Sends a message to the client */
+        /* Parameters: message – the message to send */
+        /* Return Value: none */
+        /***************************************************************************/
+        public void send(String message)
+        {
+            out.println(message);
+        }
 
         // do the thread processing
         /***************************************************************************/
@@ -84,9 +153,22 @@ public class Server
                 // Send HELLO to client
                 out.println("HELLO");
 
+                // For now I am leaving the above HELLO connection
+                // But continuing by grabbing a full canvas and sending it to the client
+                send(getFullCanvas());
+
                 // Wait until client disconnects
                 while (in.readLine() != null) {
-                    // Do nothing, just keep connection alive
+                    //Now we can actually do something while running
+                    //Listen for client messages and handle them accordingly
+
+                    Message msg = Protocl.parseMessage(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
+
+                    if (msg != null && msg.type.equals("SET")) 
+                    {
+                        // Handle SET message
+                        handleSet(msg.x, msg.y, msg.color); 
+                    }
                 }
 
                 // Print disconnect message
@@ -113,3 +195,15 @@ public class Server
 }   // end class Server
 
 
+
+
+// Addtional message for closing a client specifically
+
+//LIBRARY METHODS INCLUDE
+// SET a pixel
+// UPDATE a pixel
+// FULL (the entire canvas for a new client)
+
+
+
+//Message 
