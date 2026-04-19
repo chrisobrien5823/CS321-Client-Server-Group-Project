@@ -1,16 +1,22 @@
 public interface Canvas {
     //Convert client string to a readable format for output
-    Message parse(String input);
+    static Message parse(String input) {
+        return null;
+    }
 
     //Format a single pixel change (Used for SET/UPDATE)
-    String formatUpdate(int x, int y, char color);
+    static String formatUpdate(int x, int y, char color) {
+        return null;
+    }
 
-    // 3. Format the full canvas string (For new clients)
-    String formatFull(char[][] canvas);
+    //Format the full canvas string (For new clients)
+    static String formatFull(char[][] canvas) {
+        return null;
+    }
 
-    // 4. Format a deletion (Placeholder)
+    //Format a deletion (Placeholder)
     String formatDelete(int x, int y);
 
-    // 5. Format a reset request (Placeholder)
+    //Format a reset request (Placeholder)
     String formatReset();
 }

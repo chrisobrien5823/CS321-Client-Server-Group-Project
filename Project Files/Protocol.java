@@ -1,7 +1,6 @@
 public class Protocol implements Canvas {
 
-    @Override
-    public Message parse(String input) {
+    public static Message parse(String input) {
         if (input == null || input.isEmpty()) return null;
         String[] parts = input.split(" ");
         String cmd = parts[0].toUpperCase();
@@ -23,13 +22,11 @@ public class Protocol implements Canvas {
         }
     }
 
-    @Override
-    public String encodeUpdate(int x, int y, char color) {
+    public static String formatUpdate(int x, int y, char color) {
         return String.format("UPDATE %d %d %c", x, y, color);
     }
 
-    @Override
-    public String formatFull(char[][] canvas) {
+    public static String formatFull(char[][] canvas) {
         StringBuilder sb = new StringBuilder("FULL ");
         for (char[] row : canvas) {
             sb.append(new String(row));
