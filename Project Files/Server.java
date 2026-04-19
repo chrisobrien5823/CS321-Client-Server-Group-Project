@@ -111,9 +111,7 @@ public class Server
         private Socket socket;   // socket to use to connect to clients
         private PrintWriter out;
         private BufferedReader in;
-        private String inputLine, outputLine;
-        private String[] operands;
-        private Integer sum;
+        private String inputLine;
 
         // Construct a handler thread
         public Handler(Socket socket)
@@ -162,7 +160,7 @@ public class Server
                     //Now we can actually do something while running
                     //Listen for client messages and handle them accordingly
 
-                    Message msg = Protocl.parseMessage(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
+                    Message msg = Protocol.parseMessage(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
 
                     if (msg != null && msg.type.equals("SET")) 
                     {
@@ -204,6 +202,8 @@ public class Server
 // UPDATE a pixel
 // FULL (the entire canvas for a new client)
 
+/*********************
+ * Right now I need encodeUpdate, encodeFull (canvas), and ParseMessage
+ */
 
-
-//Message 
+//Message
