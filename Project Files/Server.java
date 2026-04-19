@@ -87,11 +87,11 @@ public class Server
     /* Parameters: x – the x-coordinate, y – the y-coordinate, c – the color to set */
     /* Return Value: none */
     /***************************************************************************/
-    public static void handleSet(int x, int y, char color) 
+    public static synchronized void handleSet(int x, int y, char color) 
     {
         if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) // so long as the pixel is within the canvas
         {
-            canvas[x][y] = color;
+            canvas[y][x] = color;
             
             String msg = Protocol.encodeUpdate(x, y, color); //LIBRARY FUNCTION "UPDATE x y color"
             broadcast(msg); // send update to all clients
@@ -156,7 +156,7 @@ public class Server
                 send(getFullCanvas());
 
                 // Wait until client disconnects
-                while (in.readLine() != null) {
+                while ((inputLine = in.readLine()) != null) {
                     //Now we can actually do something while running
                     //Listen for client messages and handle them accordingly
 
@@ -179,6 +179,11 @@ public class Server
             }
             finally
             {
+                synchronized(clients)
+                {
+                    clients.remove(this); // remove this handler from the clients list when done
+                }
+                
                 try
                 {
                     socket.close();
