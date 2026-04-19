@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+
 public class Server
 {  
 
@@ -93,7 +94,7 @@ public class Server
         {
             canvas[y][x] = color;
             
-            String msg = Protocol.encodeUpdate(x, y, color); //LIBRARY FUNCTION "UPDATE x y color"
+            String msg = Protocol.formatUpdate(x, y, color); //LIBRARY FUNCTION "UPDATE x y color"
             broadcast(msg); // send update to all clients
         }
     }
@@ -101,7 +102,7 @@ public class Server
     //getCanvas TBA
     public static synchronized String getFullCanvas() 
     {
-        return Protocol.encodeFull(canvas); //LIBRARY FUNCTION "FULL canvas"
+        return Protocol.formatFull(canvas); //LIBRARY FUNCTION "FULL canvas"
     }
 
 
@@ -160,7 +161,7 @@ public class Server
                     //Now we can actually do something while running
                     //Listen for client messages and handle them accordingly
 
-                    Message msg = Protocol.parseMessage(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
+                    Message msg = Protocol.parse(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
 
                     if (msg != null && msg.type.equals("SET")) 
                     {
