@@ -15,7 +15,7 @@
 // Changelog:
 // - Initial creation of client from class example (3/17/26)
 // - Implemented user args parsing for port num; Submission of client.c with phase #1 deliverables (4/10/26)
-// - Added menu for server data transport. Looking into threading to handle server responses
+// - Added menu for server data transport. Looking into threading to handle server responses (4/19/26)
 
 
 #include <math.h>
@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // Threading lib
 // https://www.geeksforgeeks.org/c/multithreading-in-c/
@@ -41,9 +42,12 @@
 
 // Function prototypes
 uint16_t parse_port_number_from_args(char *);
-void* listen_for_server_changes(int *);
-void send_msg(int *);
-void* user_menu(bool*, char [25], int *);
+void* listen_for_server_changes_and_update(void *);
+void* user_menu(void *);
+
+
+
+
 
 
 
@@ -51,10 +55,28 @@ void* user_menu(bool*, char [25], int *);
 
 
 /**
-    Struct for user information
+Representation of Message as defined in library files
 */
-struct UserInfo {
-    char name[25];  
+struct message {
+    char *type;
+    int x;
+    int y;
+    char color; 
+    char *data;
+};
+
+
+/** 
+https://stackoverflow.com/questions/13131982/create-thread-passing-arguments
+
+With multithreading on c, you can only thread a function that has one arg of 
+void*. Apparently, the solution is to put any arguments in a struct. Heres 
+a struct for the menu and any functions that need the socket and user num.
+
+*/
+struct program_info {
+    char* student_num;  
+    int *socket;
 
 };
 
@@ -69,7 +91,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in address; // Struct that holds IP address data
     char buffer[1024]; // The buffer to recieve data 
     uint16_t port; // Port value
-    int reciever; // Variable that holds the server response data
+    //int reciever; // Variable that holds the server response data
 
 
 
@@ -105,21 +127,26 @@ int main(int argc, char *argv[])
     connect(sock, (struct sockaddr *)&address, sizeof(address)); // Connect to the server
 
     printf("Connected. \nWelcome %s", student_num);
+
+
+    // init param struct + pass socket abd num to struct
+    // see def of program_info struct above
+    struct program_info *args = malloc(sizeof *args);
+    args->socket = &sock;
+    args->student_num = student_num;
     
-    bool* user_exit = false;
+    //bool* user_exit = false;
     
     pthread_t thread1;
     pthread_t thread2; 
 
-
-    pthread_create(&thread1, NULL, user_menu(user_exit, student_num, &sock), NULL);
-    pthread_create(&thread2, NULL, listen_for_server_changes(&sock), NULL);
+    pthread_create(&thread1, NULL, user_menu, args);
+    pthread_create(&thread2, NULL, listen_for_server_changes_and_update, args);
 
     pthread_join(thread1, NULL);
 
 
-
-    user_menu(user_exit, student_num, &sock);
+    //user_menu(user_exit, &student_num, &sock);
     
     close(sock);
 
@@ -161,44 +188,63 @@ uint16_t parse_port_number_from_args(char *arg) {
 }
 
 
-void send_msg(int* sock) {
-    send(*sock, "Hi there", sizeof("Hi there"), 0);
-}
 
+void* user_menu(void *args) {
 
-void user_menu(bool* user_exit, char student_num[25], int* socket) {
-
-    while(user_exit == false) {
+    struct program_info *info = args;
+    
+    
+    bool exit = true;
+    
+    printf("Running on menu thread");
+    
+    while(exit) {
         char user_option;
 
         printf("\nMenu\n---------------\n");
         printf("1. (S)end a message to the server\n2. (E)xit the program");
-        printf("\nWhat command would you like to perform #%s?\n", student_num);
+        printf("\nWhat command would you like to perform #%s?\n", info->student_num);
 
         scanf("%c", &user_option);
 
         switch(user_option) {
             case 'S':
                 printf("Hi");
-                send_msg(socket);
+                int* sock = info->socket;
+                send(*sock, "Hi there you", sizeof("Hi there you"), 0);
+                break;
             case 'E':
-                printf("exit");
-                *user_exit = true;
+                printf("exit\n");
+                exit = false;
+                break;
+                
             default: 
                 printf("Invalid. Try again");
             }
         }
     
-    user_menu(user_exit, *student_num, socket);      
+       
 }
 
 
 
-void* listen_for_server_changes(*int socket) {
+void* listen_for_server_changes_and_update(void *args) {
+
+    struct program_info *info = args;
+
+    printf("Running on listen thread\n");
+
+
+    char board[8][8]; 
+
     char buf[1024];
 
+    int *sock = info->socket;
+
     while(true) {
-        recv(socket, buf, sizeof(buf) - 1, 0 ); 
+        int received = recv(*sock, buf, sizeof(buf) - 1, 0 );
+        buf[received] = '\0'; 
+        printf("%s", buf);
     }
 }
 
