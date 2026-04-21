@@ -78,6 +78,7 @@ public class Server
             for (Handler client : clients) 
             {
                 client.send(message); //send not implemented yet
+                client.send(getFullCanvas());
             }
         }
     }
@@ -144,7 +145,7 @@ public class Server
             try
             {
                 out = new PrintWriter(socket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                //in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 // Print connection message
                 System.out.println("Connecting to " + socket.getInetAddress());
@@ -155,23 +156,38 @@ public class Server
                 // For now I am leaving the above HELLO connection
                 // But continuing by grabbing a full canvas and sending it to the client
                 send(getFullCanvas());
+                
+                byte[] buf = new byte[1024];
 
                 // Wait until client disconnects
-                while ((inputLine = in.readLine()) != null) {
+                while (true) {
                     //Now we can actually do something while running
                     //Listen for client messages and handle them accordingly
 
-                    Message msg = Protocol.parse(inputLine); //LIBRARY FUNCTION to parse a message into a Message object
+
+                    // Get raw bytes
+
+                    socket.getInputStream().read(buf);
+
+
+
+                    System.out.println("Got message!");
+
+                    Message msg = Protocol.parse(buf); //LIBRARY FUNCTION to parse a message into a Message object
 
                     if (msg != null && msg.type.equals("SET")) 
                     {
                         // Handle SET message
                         handleSet(msg.x, msg.y, msg.color); 
                     }
+
+
+
+                    buf = new byte[1024];
                 }
 
                 // Print disconnect message
-                System.out.println("BYE " + socket.getInetAddress());
+                //System.out.println("BYE " + socket.getInetAddress());
 
             }
             catch (IOException e)
