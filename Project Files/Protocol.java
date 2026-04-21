@@ -1,9 +1,17 @@
-public class Protocol implements Canvas {
+public class Protocol {
 
-    public static Message parse(String input) {
-        if (input == null || input.isEmpty()) return null;
+    public static Message parse(byte[] in) {
+        if (in == null) return null;
+
+        System.out.println("Processing message");
+
+        String input = new String(in);
+        
+        System.out.println(input);
+
         String[] parts = input.split(" ");
         String cmd = parts[0].toUpperCase();
+
 
         try {
             switch (cmd) {
@@ -34,12 +42,10 @@ public class Protocol implements Canvas {
         return sb.toString();
     }
 
-    @Override
     public String formatDelete(int x, int y) {
         return String.format("UPDATE %d %d .", x, y);
     }
 
-    @Override
     public String formatReset() {
         return "RESET";
     }
