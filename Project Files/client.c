@@ -16,6 +16,7 @@
 // - Initial creation of client from class example (3/17/26)
 // - Implemented user args parsing for port num; Submission of client.c with phase #1 deliverables (4/10/26)
 // - Added menu for server data transport. Looking into threading to handle server responses (4/19/26)
+// - Finished threading. All tests passed (4/20/26)
 
 
 #include <math.h>
@@ -44,10 +45,6 @@
 uint16_t parse_port_number_from_args(char *);
 void* listen_for_server_changes_and_update(void *);
 void* user_menu(void *);
-
-
-
-
 
 
 
@@ -211,10 +208,10 @@ void* user_menu(void *args) {
             case 'S':
                 printf("Hi");
                 int* sock = info->socket;
-                send(*sock, "Hi there you", sizeof("Hi there you"), 0);
+                send(*sock, "SET 5 7 B", sizeof("SEND 5 7 B"), 0);
                 break;
             case 'E':
-                printf("exit\n");
+                printf("exit\n") ;
                 exit = false;
                 break;
                 
@@ -244,7 +241,7 @@ void* listen_for_server_changes_and_update(void *args) {
     while(true) {
         int received = recv(*sock, buf, sizeof(buf) - 1, 0 );
         buf[received] = '\0'; 
-        printf("%s", buf);
+        printf("Update: %s", buf);
     }
 }
 
