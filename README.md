@@ -44,7 +44,7 @@ In a new terminal in Bash, run the client.
 ./client [port number][size of port number] 
 ```
 
-**Note:** The port is currently hardcoded to 4008 for testing, but typically accepts a command-line argument. The client number currently auto defaults to 127.0.0.1. Also if the user includes too few arguemnts 
+**Note:** The port is currently hardcoded to 4008 for testing but typically accepts a command-line argument. The client number currently auto defaults to 127.0.0.1. 
 
 ---
 
