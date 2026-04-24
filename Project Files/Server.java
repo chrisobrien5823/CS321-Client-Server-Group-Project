@@ -19,7 +19,7 @@ import java.util.*;
 public class Server
 {  
 
-    private static final int SIZE = 20;  // size of the canvas in pixels
+    private static final int SIZE = 8;  // size of the canvas in pixels
     private static char[][] canvas = new char[SIZE][SIZE];  // the canvas itself
     private static List<Handler> clients = new ArrayList<>();  // list of connected clients
     /***************************************************************************/
@@ -54,6 +54,7 @@ public class Server
                 // synchronize access to the clients list when adding a new handler
                 synchronized(clients) {
                     clients.add(handler);
+                    System.out.println(clients.size());
                 }
                 handler.start();
             }  // end while
@@ -77,7 +78,7 @@ public class Server
         {
             for (Handler client : clients) 
             {
-                client.send(message); //send not implemented yet
+                //client.send(message); //send not implemented yet (Ben: Client does not need the message response)
                 client.send(getFullCanvas());
             }
         }
@@ -145,70 +146,86 @@ public class Server
             try
             {
                 out = new PrintWriter(socket.getOutputStream(), true);
-                //in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 // Print connection message
                 System.out.println("Connecting to " + socket.getInetAddress());
 
                 // Send HELLO to client
-                out.println("HELLO");
 
                 // For now I am leaving the above HELLO connection
                 // But continuing by grabbing a full canvas and sending it to the client
+
+                System.out.println(getFullCanvas());
+
                 send(getFullCanvas());
                 
                 byte[] buf = new byte[1024];
-
                 // Wait until client disconnects
-                while (true) {
                     //Now we can actually do something while running
                     //Listen for client messages and handle them accordingly
 
 
                     // Get raw bytes
 
+
+                boolean exit = false;
+                while(exit == false) {
                     socket.getInputStream().read(buf);
 
+                    //Ben - https://stackoverflow.com/questions/18367539/slicing-byte-arrays-in-java
+                    byte[] check_for_exit = Arrays.copyOfRange(buf, 0, 4);
 
 
-                    System.out.println("Got message!");
 
-                    Message msg = Protocol.parse(buf); //LIBRARY FUNCTION to parse a message into a Message object
+                    if(buf[0] != 0) {
+                            // System.out.println("check exit: " + new String(check_for_exit));
+                            // System.out.println("Equal?: " + (new String(check_for_exit).compareTo("exit")));
 
-                    if (msg != null && msg.type.equals("SET")) 
-                    {
-                        // Handle SET message
-                        handleSet(msg.x, msg.y, msg.color); 
+                            if((new String(check_for_exit)).compareTo("exit") == 0)  {
+                                exit = true;
+                                break;
+                            } else {    
+                                System.out.println("Got message!");
+
+                                Message msg = Protocol.parse(buf); //LIBRARY FUNCTION to parse a message into a Message object
+                                if (msg != null && msg.type.equals("SET")) 
+                                {
+                                    // Handle SET message
+                                    handleSet(msg.x, msg.y, msg.color); 
+                                    System.out.println(getFullCanvas());
+
+                                }
+                            }
+
                     }
 
-
-
                     buf = new byte[1024];
+                        
                 }
 
                 // Print disconnect message
-                //System.out.println("BYE " + socket.getInetAddress());
+        System.out.println("BYE " + socket.getInetAddress());
 
-            }
-            catch (IOException e)
-            {
+        }
+        catch (IOException e)
+        {
+            System.out.println(e);
+        }
+        finally
+        {
+            try {
+                socket.close();
+            } 
+            catch(IOException e) {
                 System.out.println(e);
             }
-            finally
+            synchronized(clients)
             {
-                synchronized(clients)
-                {
-                    clients.remove(this); // remove this handler from the clients list when done
-                }
-                
-                try
-                {
-                    socket.close();
-                }
-                catch (IOException e)
-                    {
+                clients.remove(this); // remove this handler from the clients list when done
+            }
 
-                    }  // end catch
+            
             }  // end finally
         }  // end function run
     }  // end class Handler
