@@ -41,10 +41,10 @@ java Server (whatever Port Number)
 In a new terminal in Bash, run the client.
 
 ```bash
-./client 127.0.0.1 (same Port Number)
+./client [port number][size of port number] 
 ```
 
-**Note:** The port is currently hardcoded to 4008 for testing, but typically accepts a command-line argument
+**Note:** The port is currently hardcoded to 4008 for testing, but typically accepts a command-line argument. The client number currently auto defaults to 127.0.0.1. Also if the user includes too few arguemnts 
 
 ---
 
@@ -54,7 +54,7 @@ The Canvas Pixel application follows a Client-Server architecture which is utili
 
 - **Server (Java):** Uses ServerSocket and a Handler thread for every client connection to allow for simultaneous users. Managing the 2D canvas array and broadcasting any changes to the entire clients list.
 
-- **Client (C):** A multi-threaded terminal application. It uses pthread to run two tasks at once: one thread handles the User Menu (in this case: sending data), and the other thread listens for server broadcasts to update the local board view for everyone who has access.
+- **Client (C):** A multi-threaded terminal application. It uses pthread to run two tasks at once: one thread handles the User Menu (in this case: sending data), and the other thread listens for server broadcasts to update the local board view for everyone who has access. Note: If the user includes too few arguemnts, it will display it in the terminal.
 
 - **Library (Java):** The "Middle Man" of the application. It contains the Message object and Protocol logic that turns raw bytes from the network into actionable commands for the server.
 
